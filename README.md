@@ -116,7 +116,8 @@ graph TD
     N0 --> l0((leaf-ab4c<br>02-14-8:00:00))
 ``` 
 
-Here is the sequence diagram of syncronizing Nodes A, B, and C, with C coming in the middle of the syncronization 
+Here is the sequence diagram of synchronizing Nodes A, B, and C, with C coming in the middle of the synchronization 
+Github has a problem rendering the sequenceDiagram but feel to use a mermaid renderer with the following code if it doesn't render properly
 ```mermaid
 sequenceDiagram
     A -->> B: MT:3:fdf3 
@@ -154,10 +155,10 @@ sequenceDiagram
 This is just a snippet of the messages the rough step though
 
 Steps:
-    1. Exchange root hashes when a new node is encountered 
-    2. Compare, if different exchange the next right hash in the tree, repeat until match found
-    3. When there is a match go up one level traverse down the left fork then back to step 2 until the difference is a leaf
-    4. put new leaf in order based on timestamp, recalculate tree, compare and traverse back up the tree repeat step 2 until roots match
+1. Exchange root hashes when a new node is encountered 
+2. Compare, if different exchange the next right hash in the tree, repeat until match found
+3. When there is a match go up one level traverse down the left fork then back to step 2 until the difference is a leaf
+4. put new leaf in order based on timestamp, recalculate tree, compare and traverse back up the tree repeat step 2 until roots match
 
 As hashes leaves of the merkle tree are discovered that are missing the data can then be requested from either the LoRa radio or any ESP-NOW nodes within range. 
 
