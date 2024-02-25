@@ -160,6 +160,25 @@ Steps:
 3. When there is a match go up one level traverse down the left fork then back to step 2 until the difference is a leaf
 4. put new leaf in order based on timestamp, recalculate tree, compare and traverse back up the tree repeat step 2 until roots match
 
+Final State of the merkle tree after synchronization:
+```mermaid
+graph TD
+    Root((Root<br>b00b)) --> h5((Hash 5<br>abcd))
+    Root --> h2b((Hash 2<br>ab02))
+    h5 --> h4((Hash 4<br>beef))
+    h5 --> h3((Hash 3<br>dead))
+    h4 --> t4a((leaf-cddf<br>02-15-23:00:00))
+    h4 --> t5((leaf-90c2 <br>02-15-22:00:00))
+    h3 --> t4b((leaf-dee4<br>02-15-21:00:00))
+    h3 --> t3a((leaf-ab87 <br>02-15-16:00:00))
+    h2b --> h1b((Hash 1<br>15cd))
+    h2b --> h0((Hash 0<br>8d3c))
+    h1b --> t3b((leaf-ce54 <br>02-15-15:00:00))
+    h1b --> t2((leaf-481d <br>02-15-9:00:00))
+    h0 --> t1((leaf-cd12<br>02-14-18:00:00))
+    h0 --> t0((leaf-ab4c<br>02-14-8:00:00))
+```
+
 As hashes leaves of the merkle tree are discovered that are missing the data can then be requested from either the LoRa radio or any ESP-NOW nodes within range. 
 
 
