@@ -1,69 +1,69 @@
 # SneakerNet: resilient asynchronous networks for adverse environments.
 
-Abstract: In mountainous or sparsely populated places with little infrastructure communication and power can be a challenge. The use of portable battery packs as basic power infrastructure opens up the potential of adding communication to these batteries which is always on. Making each battery as small store and forward server using spectrum diverse low power wireless communication technologies to synchronize data between nodes as they physically move around during normal usage cycle and over low bandwidth LoRa links. Allowing for basic text based systems akin to the dial-up days of BBSs in the early 90s. 
+Abstract: For cities located in mountainous and sparsely populated places, the lack of infrastructure makes accessing telecommunications and power a challenge. The use of portable battery packs as basic power infrastructure opens up the potential of adding always-on communication to the portable battery packs. Attaching always-on telecom devices on each battery pack enables each battery to act as a small store and forward server, using spectrum diverse low power wireless communication technologies to synchronize data between battery pack nodes. Over time, portable battery packs are physically moved by holders during normal usage cycle and over low bandwidth LoRa links, allowing for basic text-based systems akin to the dial-up days of BBSs in the early 90s. 
 
-## Overview of technologies 
-The cost of lithium portable electrical storage continues to drop and become more and more robust with the roll out of LiFePO4 in many devices. 
-With these developments there are companies such as LiquidStar are providing meaningful power to communities beyond the grid with a current pilot in Djibouti deploying 75 of these batteries.
-55 of these batteries have built in tracking,logging, and communication as they are intended to be rented out and gather usage data. 
-Tech includes LoRa radio, ESP32, Swarm satellite comms, 4gb SD card, GPS, and an expansion port that can be used for 4g radio or similar device. 
+## Overview of technologies used:
+
+The cost of lithium portable electrical storage continues to drop and become more and more robust with the rollout of LiFePO4 in many devices. 
+With these developments, there are companies like LiquidStar that provide meaningful power infrastructure to communities outside of the grid, with a current pilot in Djibouti deploying 75 batteries.
+55 of these batteries have built in tracking, logging, and telecommunication capabilities, and those capabilities are used responsive to rental as they are intended to be rented out and gather usage data. 
+The tech used in this pilot includes includes LoRa radio, ESP32, Swarm satellite comms, a 4gb SD card for storage, GPS, and an expansion port that can be used for 4g radio or similar tech. 
+From this point onward, portable batteries with attached telecom devices will heretofore be referred to as "nodes." 
 
 ### LoRa
-LoRa is great at long range low bandwidth communications. 
-Usually only in the range of a 10s of bps to 10s of kbps.
+LoRa is great at long range low-bandwidth communications, usually only in the range of 10s of bps to 10s of kbps.
 It operates in the relatively low frequency ISM band 433-915mhz depending on locale.
-It uses a spread spectrum chirp encoding which is great for long distance and noise immunity. 
+It uses a spread spectrum chirp encoding, which is great for long distance and noise immunity. 
 
 ### ESP-NOW
-ESP-NOW can be used in tandem with the ESP acting as a wifi hotspot and is a connectionless protocol that does both unicast and broadcast communications. 
-It's ability to have very immediate data transfer is great for fast moving nodes that may only have a few seconds of connection.
-It has similar range as wifi as it uses the 2.4ghz radio to do ESP-NOW and has a max connection speed of 1mbps
+ESP-NOW can be used in tandem with the ESP acting as a Wi-Fi hotspot, and is a connectionless protocol that does both unicast and broadcast communications. 
+Its ability to have very quick data transfer is great for fast-moving nodes that may only have a few seconds' worth of proximity and connection. 
+Its range is comparable to Wi-Fi, and it uses  2.4ghz radio to do ESP-NOW and has a max connection speed of 1mbps.
 
 ### WiFi
-Everyone knows what it is, the particular standard available on the testbed chips is WiFi 4.
-While this has the highest bandwidth up to 150mbps real world would be much less.
-Another drawback is the time it takes to connect to a hotspot can take at least a few seconds
+The particular standard available on the testbed chips is WiFi 4.
+While the upper band on bandwidth is estimated to be up to 150mbps, real world performance is lower.
+Another drawback is the time it takes to connect to a hotspot can take at least a few seconds, which prevents nodes from passing information to and from one another in passing.
 
 
 ## Protocol Description
 We will be using both the LoRa radio and the ESP32 using both ESP-NOW and WiFi for state, routing, and data transfer.
-Each device has a GPS that can be used to precisely synchronize clocks which allows for optimization of settings for LoRa transmissions setting and discovering nodes that have very weak signals. 
-The GPS can also give us location information allowing nodes know when they get close to other nodes, it will also give us velocity.
+Each device has a GPS that can be used to precisely synchronize clocks, which allows for optimization of settings for LoRa transmissions setting and discovering nodes that have very weak signals. 
+The GPS can also give us location information, allowing nodes to know when they're near other nodes. Nodes' awareness of other nodes in their vicinity increases potential velocity of data transfer.
 Each node will use a static MAC address of the ESP32 chip as a node identifier. 
 
 
 ### Modes of Operation
 
-* High Velocity
-When node detects it is moving at high speed where WiFi might only be in range for a few seconds it will default to using ESP-NOW to broadcast it's MAC address. 
-When a node sees this broadcast it responds to it over unicast then attempts to syncronize as much data while in range.
-* Low Velocity
-When node detects slower speeds it will continuously scan WiFi looking for nearby hotspots to connect and then synchronize over wifi at maximum speed via IP.
+* High Velocity: When a node detects it is moving at high speed, and WiFi may only be in range for a few seconds, it will default to using ESP-NOW to broadcast its MAC address. 
+When another node sees this broadcast, the other node sends a response over unicast, and attempts to syncronize as much data while the former node is in range.
+* Low Velocity: When a node detects slower speeds. it will continuously scan Wi-Fi looking for nearby hotspots to connect to. When it locates a Wi-Fi signal, it will connect and synchronize data at maximum speed via IP.
 * Stationary
-When a node isn't moving it will connect to anything it can with the highest bandwidth option, falling back to LoRa for longer range nodes.
+When a node isn't moving, it will connect to anything it can with the highest bandwidth option, falling back to LoRa for longer range nodes.
 
 
 In order of priority of the messages handled over LoRa:
-1. routing table, whose nearby in terms of signal strength, every message has the sender's MAC address embedded so this automatic in all communication
-2. Explicit location services, this would be exchanging current GPS locations to further enhance exchange of data during batteries transiting
-3. State synchronization, these are small communications tailored for synchronizing the state of data held across all the nodes, merkle tree and leaf hashes.
-4. Data synchronization, after/during state synchronization leaf data is requested via the hash of the leaf as the ordering doesn't matter the hash will alway retrieve the right data even if a node is not fully in sync
+1. Routing table, whose nearby in terms of signal strength, every message has the sender's MAC address embedded so this is automatic in all communications.
+2. Explicit location services: exchanging current GPS locations to further enhance data transfer while nodes are in physical transit.
+3. State synchronization: small communications tailored for synchronizing the state of data held across all the nodes (e.g. merkle tree and leaf hashes).
+4. Data synchronization: after/during state synchronization, leaf data is requested via the hash of the leaf. The ordering doesn't matter - the hash will alway retrieve the right data, even if a node is not fully in sync.
 
 
-The primary use for the LoRa is to build a routing table for ESP-NOW as unicast requires knowing the counterpart's MAC address, this MAC would also be used to creat unique WiFi hotspot names.
-Unicast on ESP-NOW provides an ACK back to transmitter thus maximizing the bandwidth usage by not retransmitting already recieved information while maximizing synchronization speed.
+The primary use for the LoRa is to build a routing table for ESP-NOW, as unicast requires knowing the counterpart's MAC address. This MAC address would also be used to create unique Wi-Fi hotspot names.
+Unicast on ESP-NOW provides an ACK response back to transmitter, optomizing for sync speed and bandwidth usage by not retransmitting already recieved information.
 
 
 ### Syncronization 
-The simplest lowest overhead way to minimize latency and bandwidth used is to put each event/data change into a merkle tree on each node, ordering the leaves by GPS timestamp.
-By generating hashes in a deterministic order based off of the ordered leaves we can include a hash number so in a broadcast domain with multiple listeners there is less communication between nodes because every message regardless of previous messages can provide information to listeners.
+The simplest lowest overhead way to minimize latency and bandwidth used is to put each event/data change into a merkle tree on each node, ordering the leaves by GPS location + timestamp.
+By generating hashes deterministically based on the ordered leaves, we can include a hash number.  As a result, a broadcast domain with multiple listeners has less communication between nodes, because every message regardless of previous messages can provide information to listeners.
+
 See the examples below to see the hash numbering in practice, it simply is building the oldest trees deepest first. 
 This would allow one to walk down the tree finding the last synchronized point in O(log(n)) messages. 
-With deterministic ordering of the walk down the tree to find the synchronized points the pattern in which the hash numbers are broadcast can allow the listen to infer location in the tree.
-Even a node joining in the middle of a conversation the messages can be stored and incorporated into the tree when it fits the right shape, though will not be possible if too far out of sync they would be discarded.
-With a fluctuating nodeset m with each separately different data set worst case would be O(m*nlog(n)) messages assuming node time is long compared to O(nlog(n))
+With deterministic ordering of the walk down the tree to find the synchronized points, the ordering that hash numbers are broadcasted can allow the listeners to infer location in the tree.
+Even for a node joining in the middle of a data sync between two parties, the messages can be stored and incorporated into the tree when it fits the right shape(if the listening node is too far out of sync, messages would be discarded).
+With a fluctuating nodeset m , with each separately different data set worst case would be O(m*nlog(n)) messages assuming node time is long compared to O(nlog(n))
 The goal of these design choices is to minimize time on air since most of the connectivity will be over the severely limited LoRa bandwidth.
-If we were in adversarial condition authentication and associated PKI would have to be layered onto this, to avoid trivial denial of service. 
+If we were in adversarial condition, authentication and associated PKI would have to be layered onto this, to avoid trivial denial of service. 
 
 
 The for the following steps exchanges will have format something like the following, minimizing time on air will utilize implicit mode in LoRa with CRC, or pack multiple messages in one ESP-NOW packet 
@@ -152,13 +152,13 @@ sequenceDiagram
         Note right of B: B knows everyone knows righ of tree<br>goes left then right, repeats<br>until all nodes are in sync
     end
 ```
-This is just a snippet of the messages the rough step though
+This is a figurative snippet of messages
 
 Steps:
 1. Exchange root hashes when a new node is encountered 
-2. Compare, if different exchange the next right hash in the tree, repeat until match found
-3. When there is a match go up one level traverse down the left fork then back to step 2 until the difference is a leaf
-4. put new leaf in order based on timestamp, recalculate tree, compare and traverse back up the tree repeat step 2 until roots match
+2. Compare. If different, exchange the next right hash in the tree, repeat until match found
+3. When there is a match, go up one level, traverse down the left fork, then repeat step 2 until the difference found is a leaf
+4. put new leaf in order based on timestamp, recalculate tree, compare and traverse back up the tree. Repeat step 2 until roots match
 
 Final State of the merkle tree after synchronization:
 ```mermaid
@@ -179,14 +179,14 @@ graph TD
     h0 --> t0((leaf-ab4c<br>02-14-8:00:00))
 ```
 
-As hashes leaves of the merkle tree are discovered that are missing the data can then be requested from either the LoRa radio or any ESP-NOW nodes within range. 
+As hashes corresponding to missing leaves in the merkle tree are discovered, the data can then be requested using either the LoRa radio, or any ESP-NOW nodes within range. 
 
 
 ### Priority Queues 
-To expand on the idea of merkle tree synchronization you could have O(mlog(n))speed but have m priority queues, this new compute complexity only applies to the detection synchronization points and not the actual data synchronization which which happens at a constant rate. 
-Each queue being defined by a merkle tree of important messages.
+To expand on the idea of merkle tree synchronization, you could have O(mlog(n))speed but have m priority queues. This new compute complexity only applies to the detection synchronization points, and not the actual data synchronization which which happens at a constant rate. 
+Each queue is defined by a merkle tree of important messages.
 Each queue would be processed in order of priority, creating a sparse version of lowest queue which would contain all data.
-This would allow each sparse tree to detect in O(log(n)) n with n reducing by difference from low priority queue to high however the savings would be in the reduction of data relating to detecting those diffs.
+This would allow each sparse tree to detect in O(log(n)) n , with n reducing by difference from low priority queue to high. However, the savings would be in the reduction of data relating to detecting those diffs.
 This would allow for the sparse synchronization of the most important and lowest bandwidth data first giving the best quality service possible for nodes in transport. 
 
 
